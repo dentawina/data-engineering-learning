@@ -169,9 +169,7 @@ def ingest_mypertamina_reviews():
                 df["developer_replied_at"]
             )
 
-        hook = PostgresHook(
-            postgres_conn_id=POSTGRES_CONN_ID
-        )
+        hook = PostgresHook(postgres_conn_id=POSTGRES_CONN_ID)
 
         engine = hook.get_sqlalchemy_engine()
 
