@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Airflow
+airflow/logs/
+airflow/plugins/__pycache__/
+airflow/airflow.db
+
+# dbt
+dbt/**/target/
+dbt/**/logs/
+dbt/**/dbt_packages/
+
+# Environment / secrets
+.env
+.env.*
+supabase_denta.env
+profiles.yml
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
