@@ -20,12 +20,7 @@ LOCAL_TZ = pendulum.timezone("Asia/Jakarta")
 @dag(
     dag_id="ingest_mypertamina_reviews",
     schedule="10 0 * * *",  # setiap hari jam 00:10 WIB
-    start_date=pendulum.datetime(
-        2026,
-        8,
-        18,
-        tz=LOCAL_TZ,
-    ),
+    start_date=pendulum.datetime(2026,8,18,tz=LOCAL_TZ,),
     catchup=False,
     max_active_runs=1,
     tags=[
@@ -49,8 +44,8 @@ def ingest_mypertamina_reviews():
 
         context = get_current_context()
 
-        #target_date = (context["data_interval_start"].in_timezone(LOCAL_TZ).date())
-        target_date = date(2026, 8, 17)
+        target_date = (context["data_interval_start"].in_timezone(LOCAL_TZ).date())
+        ##target_date = date(2026, 8, 17)
 
         print("=" * 50)
         print(f"Target date : {target_date}")
@@ -92,22 +87,13 @@ def ingest_mypertamina_reviews():
         )
 
         # pastikan datetime
-        df["review_created_at"] = pd.to_datetime(
-            df["review_created_at"],
-            errors="coerce",
-        )
+        df["review_created_at"] = pd.to_datetime(df["review_created_at"],errors="coerce",)
 
         if "developer_replied_at" in df.columns:
-            df["developer_replied_at"] = pd.to_datetime(
-                df["developer_replied_at"],
-                errors="coerce",
-            )
+            df["developer_replied_at"] = pd.to_datetime(df["developer_replied_at"],errors="coerce",)
 
         # filter sesuai tanggal yang diproses Airflow
-        df = df[
-            df["review_created_at"].dt.date
-            == target_date
-        ].copy()
+        df = df[df["review_created_at"].dt.date== target_date].copy()
 
         print(
             f"Review ditemukan untuk "
@@ -174,13 +160,13 @@ def ingest_mypertamina_reviews():
         engine = hook.get_sqlalchemy_engine()
 
         df.to_sql(
-            name=TABLE_NAME,
+           name=TABLE_NAME,
             con=engine,
             schema=SCHEMA_NAME,
             if_exists="append",
             index=False,
             method="multi",
-        )
+        ) 
 
         inserted_rows = len(df)
 
