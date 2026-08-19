@@ -45,8 +45,12 @@ def ingest_mypertamina_reviews():
         """
 
         context = get_current_context()
+        print("NOW JAKARTA        :", pendulum.now("Asia/Jakarta"))
+        print("LOGICAL DATE       :", context["logical_date"])
+        print("DATA INTERVAL START:", context["data_interval_start"])
+        print("DATA INTERVAL END  :", context["data_interval_end"])
 
-        target_date = (context["data_interval_start"].in_timezone(LOCAL_TZ).date())
+        target_date = (pendulum.now("Asia/Jakarta").subtract(days=1).date())
         ##target_date = date(2026, 8, 17)
 
         print("=" * 50)
@@ -95,8 +99,9 @@ def ingest_mypertamina_reviews():
             df["developer_replied_at"] = pd.to_datetime(df["developer_replied_at"],errors="coerce",)
 
         # filter sesuai tanggal yang diproses Airflow
+        df['ingest_at'] = pd.to_datetime('now')
         df = df[df["review_created_at"].dt.date== target_date].copy()
-
+        
         print(
             f"Review ditemukan untuk "
             f"{target_date}: {len(df)}"
