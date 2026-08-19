@@ -2,27 +2,25 @@ import re
 import pandas as pd
 import pendulum
 from google_play_scraper import reviews, Sort
-from airflow.sdk import dag, task, get_current_context
+from airflow.sdk import dag, task
 from airflow.providers.postgres.hooks.postgres import PostgresHook
-from datetime import date
-from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy import MetaData, Table, table
-
 
 APP_ID = "com.dafturn.mypertamina"
-
 POSTGRES_CONN_ID = "supabase_postgres"
-
 SCHEMA_NAME = "public"
 TABLE_NAME = "scrapper_mypertamina"
-
 LOCAL_TZ = pendulum.timezone("Asia/Jakarta")
 
 
 @dag(
     dag_id="ingest_mypertamina_reviews",
-    schedule="10 0 * * *",  # setiap hari jam 00:10 WIB
-    start_date=pendulum.datetime(2026,8,18,tz=LOCAL_TZ,),
+    schedule="10 0 * * *",
+    start_date=pendulum.datetime(
+        2026,
+        8,
+        18,
+        tz=LOCAL_TZ,
+    ),
     catchup=False,
     max_active_runs=1,
     tags=[
@@ -37,26 +35,19 @@ def ingest_mypertamina_reviews():
         retries=2,
         retry_delay=pendulum.duration(minutes=5),
     )
-    def extract_reviews():
-        """
-        Scrape review terbaru Google Play
-        dan ambil hanya data untuk tanggal
-        interval Airflow yang sedang diproses.
-        """
+    def ingest_reviews():
 
-        context = get_current_context()
-        print("NOW JAKARTA        :", pendulum.now("Asia/Jakarta"))
-        print("LOGICAL DATE       :", context["logical_date"])
-        print("DATA INTERVAL START:", context["data_interval_start"])
-        print("DATA INTERVAL END  :", context["data_interval_end"])
+        # H-1 waktu Jakarta
+        target_date = (
+            pendulum.now("Asia/Jakarta")
+            .subtract(days=1)
+            .date()
+        )
 
-        target_date = (pendulum.now("Asia/Jakarta").subtract(days=1).date())
-        print("=" * 50)
-        print(f"Target date : {target_date}")
-        print(f"App ID      : {APP_ID}")
-        print("=" * 50)
+        print(f"Target date: {target_date}")
 
-        result, continuation_token = reviews(
+        # Extract
+        result, _ = reviews(
             APP_ID,
             lang="id",
             country="id",
@@ -69,8 +60,8 @@ def ingest_mypertamina_reviews():
         print(f"Total scraped: {len(df)}")
 
         if df.empty:
-            print("Scraper tidak mengembalikan data.")
-            return []
+            print("Tidak ada data dari Google Play.")
+            return
 
         # camelCase -> snake_case
         df.columns = [
@@ -82,7 +73,7 @@ def ingest_mypertamina_reviews():
             for col in df.columns
         ]
 
-        # Rename agar lebih jelas
+        # Rename
         df = df.rename(
             columns={
                 "at": "review_created_at",
@@ -90,109 +81,39 @@ def ingest_mypertamina_reviews():
             }
         )
 
-        # pastikan datetime
+        # Datetime
         df["review_created_at"] = pd.to_datetime(df["review_created_at"],errors="coerce",)
+        df["developer_replied_at"] = pd.to_datetime(df["developer_replied_at"],errors="coerce",)
 
-        if "developer_replied_at" in df.columns:
-            df["developer_replied_at"] = pd.to_datetime(df["developer_replied_at"],errors="coerce",)
-
-        # filter sesuai tanggal yang diproses Airflow
+        # Filter H-1
         df = df[df["review_created_at"].dt.date== target_date].copy()
-        
-        print(
-            f"Review ditemukan untuk "
-            f"{target_date}: {len(df)}"
-        )
-
+        print(f"Review tanggal {target_date}: {len(df)}")
         if df.empty:
-            return []
+            print("Tidak ada review yang perlu diinsert.")
+            return
 
-        # conversion agar aman masuk XCom JSON
-        datetime_columns = [
-            "review_created_at",
-            "developer_replied_at",
-        ]
-
-        for col in datetime_columns:
-            if col in df.columns:
-                df[col] = df[col].apply(
-                    lambda x: (
-                        x.isoformat()
-                        if pd.notnull(x)
-                        else None
-                    )
-                )
-
-        return df.to_dict(orient="records")
-
-    @task(
-        retries=2,
-        retry_delay=pendulum.duration(minutes=5),
-    )
-    def load_to_supabase(rows):
-        """
-        Load review ke Supabase PostgreSQL.
-        Duplicate review_id akan di-skip.
-        """
-
-        if not rows:
-            print("Tidak ada data yang perlu dimasukkan ke PostgreSQL.")
-            return {
-            "inserted_rows": 0,
-            "skipped_rows": 0,
-        }
-
-        df = pd.DataFrame(rows)
-
-        # kembalikan menjadi datetime
-        if "review_created_at" in df.columns:
-            df["review_created_at"] = pd.to_datetime(
-                df["review_created_at"]
-            )
-
-        if "developer_replied_at" in df.columns:
-            df["developer_replied_at"] = pd.to_datetime(
-                df["developer_replied_at"]
-            )
-        
-        # NaN / NaT -> None agar jadi NULL di PostgreSQL
-        df = df.astype(object).where(pd.notnull(df),None)
-
+        # Ingestion timestamp
+        ingest_time = pendulum.now("Asia/Jakarta")
+        df["ingest_at"] = ingest_time
+        # Connection Airflow
         hook = PostgresHook(postgres_conn_id=POSTGRES_CONN_ID)
-
         engine = hook.get_sqlalchemy_engine()
-        metadata = MetaData()
+        # Load
+        df.to_sql(
+            name=TABLE_NAME,
+            con=engine,
+            schema=SCHEMA_NAME,
+            if_exists="append",
+            index=False,
+            method="multi",)
 
-        table = Table(
-        TABLE_NAME,
-        metadata,
-        schema=SCHEMA_NAME,
-        autoload_with=engine,)
-
-        records = df.to_dict(orient="records")
-
-        stmt = insert(table).values(records)
-
-        stmt = stmt.on_conflict_do_nothing(
-        index_elements=["review_id"])
-
-        with engine.begin() as conn:
-            result = conn.execute(stmt)
-
-        inserted_rows = result.rowcount
-        skipped_rows = len(records) - inserted_rows
         print("=" * 50)
-        print(f"Total data       : {len(records)}")
-        print(f"Inserted rows    : {inserted_rows}")
-        print(f"Skipped duplicate: {skipped_rows}")
-        print(f"Table            : {SCHEMA_NAME}.{TABLE_NAME}")
+        print(f"Inserted rows : {len(df)}")
+        print(f"Target date   : {target_date}")
+        print(f"Table         : {SCHEMA_NAME}.{TABLE_NAME}")
         print("=" * 50)
 
-        return {
-            "inserted_rows": inserted_rows,
-            "skipped_rows": skipped_rows,
-        }
+    ingest_reviews()
 
-    rows = extract_reviews()
-    load_to_supabase(rows)
+
 ingest_mypertamina_reviews()
