@@ -154,6 +154,9 @@ def ingest_mypertamina_reviews():
             df["developer_replied_at"] = pd.to_datetime(
                 df["developer_replied_at"]
             )
+        
+        # NaN / NaT -> None agar jadi NULL di PostgreSQL
+        df = df.astype(object).where(pd.notnull(df),None)
 
         hook = PostgresHook(postgres_conn_id=POSTGRES_CONN_ID)
 
