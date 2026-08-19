@@ -5,6 +5,8 @@ from google_play_scraper import reviews, Sort
 from airflow.sdk import dag, task, get_current_context
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from datetime import date
+from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy import MetaData, Table, table
 
 
 APP_ID = "com.dafturn.mypertamina"
@@ -129,18 +131,16 @@ def ingest_mypertamina_reviews():
     )
     def load_to_supabase(rows):
         """
-        Load review ke Supabase PostgreSQL
-        menggunakan Airflow Connection.
+        Load review ke Supabase PostgreSQL.
+        Duplicate review_id akan di-skip.
         """
 
         if not rows:
-            print(
-                "Tidak ada data yang perlu "
-                "dimasukkan ke PostgreSQL."
-            )
+            print("Tidak ada data yang perlu dimasukkan ke PostgreSQL.")
             return {
-                "inserted_rows": 0
-            }
+            "inserted_rows": 0,
+            "skipped_rows": 0,
+        }
 
         df = pd.DataFrame(rows)
 
@@ -158,32 +158,38 @@ def ingest_mypertamina_reviews():
         hook = PostgresHook(postgres_conn_id=POSTGRES_CONN_ID)
 
         engine = hook.get_sqlalchemy_engine()
+        metadata = MetaData()
 
-        df.to_sql(
-           name=TABLE_NAME,
-            con=engine,
-            schema=SCHEMA_NAME,
-            if_exists="append",
-            index=False,
-            method="multi",
-        ) 
+        table = Table(
+        TABLE_NAME,
+        metadata,
+        schema=SCHEMA_NAME,
+        autoload_with=engine,)
 
-        inserted_rows = len(df)
+        records = df.to_dict(orient="records")
 
+        stmt = insert(table).values(records)
+
+        stmt = stmt.on_conflict_do_nothing(
+        index_elements=["review_id"])
+
+        with engine.begin() as conn:
+            result = conn.execute(stmt)
+
+        inserted_rows = result.rowcount
+        skipped_rows = len(records) - inserted_rows
         print("=" * 50)
-        print(
-            f"{inserted_rows} rows berhasil "
-            "dimasukkan ke Supabase"
-        )
-        print(
-            f"Table: "
-            f"{SCHEMA_NAME}.{TABLE_NAME}"
-        )
+        print(f"Total data       : {len(records)}")
+        print(f"Inserted rows    : {inserted_rows}")
+        print(f"Skipped duplicate: {skipped_rows}")
+        print(f"Table            : {SCHEMA_NAME}.{TABLE_NAME}")
         print("=" * 50)
 
         return {
-            "inserted_rows": inserted_rows
+            "inserted_rows": inserted_rows,
+            "skipped_rows": skipped_rows,
         }
+
     rows = extract_reviews()
     load_to_supabase(rows)
 ingest_mypertamina_reviews()
