@@ -51,8 +51,6 @@ def ingest_mypertamina_reviews():
         print("DATA INTERVAL END  :", context["data_interval_end"])
 
         target_date = (pendulum.now("Asia/Jakarta").subtract(days=1).date())
-        ##target_date = date(2026, 8, 17)
-
         print("=" * 50)
         print(f"Target date : {target_date}")
         print(f"App ID      : {APP_ID}")
@@ -99,7 +97,6 @@ def ingest_mypertamina_reviews():
             df["developer_replied_at"] = pd.to_datetime(df["developer_replied_at"],errors="coerce",)
 
         # filter sesuai tanggal yang diproses Airflow
-        df['ingest_at'] = pd.to_datetime('now')
         df = df[df["review_created_at"].dt.date== target_date].copy()
         
         print(
@@ -126,9 +123,7 @@ def ingest_mypertamina_reviews():
                     )
                 )
 
-        return df.to_dict(
-            orient="records"
-        )
+        return df.to_dict(orient="records")
 
     @task(
         retries=2,
