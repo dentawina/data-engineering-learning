@@ -2,3 +2,4 @@ pandas
 google-play-scraper
 apache-airflow-providers-postgres
 psycopg2-binary
+requests
