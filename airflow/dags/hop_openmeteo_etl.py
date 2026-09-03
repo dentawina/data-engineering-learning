@@ -101,7 +101,10 @@ if [ -f /opt/airflow/.env ]; then
     set +a
 fi
 mkdir -p "$HOP_AUDIT_FOLDER"
-/opt/hop/hop-run.sh --file="$PIPELINE" --level=Basic
+/opt/hop/hop-run.sh \
+    --runconfig=local \
+    --file="$PIPELINE" \
+    --level=Basic
 """,
         env={**HOP_ENV, "PIPELINE": PIPELINE},
         append_env=True,
