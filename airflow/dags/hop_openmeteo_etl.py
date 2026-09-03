@@ -43,7 +43,20 @@ if [ ! -x /opt/hop/hop-run.sh ]; then
     exit 1
 fi
 java -version
-/opt/hop/hop-run.sh --version
+version_output=""
+version_status=0
+set +e
+version_output=$(/opt/hop/hop-run.sh --version 2>&1)
+version_status=$?
+set -e
+printf '%s\n' "$version_output"
+if ! printf '%s\n' "$version_output" | grep -q '2[.]19[.]0'; then
+    echo "Apache Hop tidak dapat diverifikasi sebagai versi 2.19.0."
+    exit 1
+fi
+if [ "$version_status" -ne 0 ]; then
+    echo "Peringatan: hop-run --version mengembalikan status $version_status setelah mencetak versi."
+fi
 """,
         env=HOP_ENV,
         append_env=True,
