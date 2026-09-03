@@ -32,7 +32,10 @@ hop/**/cache/
 *secret*.json
 *private*.json
 *config*.json
+*.local.json
 !hop/project-config.json
+!hop/metadata/
+!hop/metadata/**
 
 # VS Code
 .vscode/

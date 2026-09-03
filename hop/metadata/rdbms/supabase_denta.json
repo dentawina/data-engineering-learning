@@ -1,0 +1,35 @@
+{
+  "virtualPath": "",
+  "rdbms": {
+    "POSTGRESQL": {
+      "sshTunnelPort": "22",
+      "sshTunnelUsePrivateKey": false,
+      "databaseName": "${SUPABASE_DB_NAME}",
+      "pluginId": "POSTGRESQL",
+      "sshTunnelEnabled": false,
+      "accessType": 0,
+      "sshTunnelUsername": "",
+      "hostname": "${SUPABASE_DB_HOST}",
+      "password": "${SUPABASE_DB_PASSWORD}",
+      "pluginName": "PostgreSQL",
+      "port": "${SUPABASE_DB_PORT}",
+      "sshTunnelHost": "",
+      "attributes": {
+        "SUPPORTS_TIMESTAMP_DATA_TYPE": "Y",
+        "QUOTE_ALL_FIELDS": "N",
+        "SUPPORTS_BOOLEAN_DATA_TYPE": "Y",
+        "FORCE_IDENTIFIERS_TO_LOWERCASE": "N",
+        "PRESERVE_RESERVED_WORD_CASE": "Y",
+        "SQL_CONNECT": "",
+        "FORCE_IDENTIFIERS_TO_UPPERCASE": "N",
+        "PREFERRED_SCHEMA_NAME": ""
+      },
+      "manualUrl": "jdbc:postgresql://${SUPABASE_DB_HOST}:${SUPABASE_DB_PORT}/${SUPABASE_DB_NAME}",
+      "sshTunnelPassphrase": "",
+      "sshTunnelPassword": "",
+      "sshTunnelPrivateKeyFile": "",
+      "username": "${SUPABASE_DB_USER}"
+    }
+  },
+  "name": "supabase_denta"
+}

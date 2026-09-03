@@ -8,6 +8,11 @@ di Windows (Hop GUI) maupun container Linux.
 ```text
 hop/
 ├── project-config.json
+├── metadata/
+│   ├── pipeline-run-configuration/
+│   │   └── local.json
+│   └── rdbms/
+│       └── supabase_denta.json
 ├── environments/
 │   └── supabase_denta.environment.json
 └── pipelines/
@@ -20,9 +25,10 @@ memetakan lima variabel Hop ke environment variable OS; nilainya tidak menyimpan
 kredensial.
 
 Folder runtime/config seperti `hop/config/` dan `.hop/` di-ignore agar kredensial
-dan metadata lokal tidak masuk Git. Metadata koneksi Hop bernama `supabase_denta`
-belum tersedia di source yang diberikan; metadata tersebut harus tersedia pada
-`HOP_CONFIG_FOLDER` di Windows dan worker Airflow sebelum pipeline dijalankan.
+dan metadata runtime tidak masuk Git. Metadata project yang diperlukan, termasuk
+koneksi Hop `supabase_denta` dan run configuration `local`, disimpan di
+`hop/metadata/`. Pada worker Airflow, folder ini harus di-mount ke
+`/opt/airflow/.hop/metadata`.
 
 ## Environment database
 
@@ -62,6 +68,7 @@ Dengan mount project ke `/opt/airflow/hop-project` dan konfigurasi Hop ke
 
 ```bash
 /opt/hop/hop-run.sh \
+  --runconfig=local \
   --file="/opt/airflow/hop-project/pipelines/practice_hop.hpl" \
   --level=Basic
 ```
