@@ -1,0 +1,29 @@
+{
+  "variables" : [
+    {
+      "name" : "SUPABASE_DB_HOST",
+      "value" : "${SUPABASE_DB_HOST}",
+      "description" : "Hostname for the Supabase PostgreSQL connection"
+    },
+    {
+      "name" : "SUPABASE_DB_PORT",
+      "value" : "${SUPABASE_DB_PORT}",
+      "description" : "Port for the Supabase PostgreSQL connection"
+    },
+    {
+      "name" : "SUPABASE_DB_NAME",
+      "value" : "${SUPABASE_DB_NAME}",
+      "description" : "Database name for the Supabase PostgreSQL connection"
+    },
+    {
+      "name" : "SUPABASE_DB_USER",
+      "value" : "${SUPABASE_DB_USER}",
+      "description" : "Username for the Supabase PostgreSQL connection"
+    },
+    {
+      "name" : "SUPABASE_DB_PASSWORD",
+      "value" : "${SUPABASE_DB_PASSWORD}",
+      "description" : "Password for the Supabase PostgreSQL connection"
+    }
+  ]
+}

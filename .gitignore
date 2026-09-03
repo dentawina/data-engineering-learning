@@ -17,8 +17,22 @@ dbt/**/dbt_packages/
 # Environment / secrets
 .env
 .env.*
+!.env.example
 supabase_denta.env
 profiles.yml
+
+# Apache Hop runtime/configuration (keep credentials out of Git)
+.hop/
+hop/config/
+hop/**/.metadata/
+hop/**/metadata/
+hop/**/logs/
+hop/**/cache/
+*credentials*.json
+*secret*.json
+*private*.json
+*config*.json
+!hop/project-config.json
 
 # VS Code
 .vscode/
