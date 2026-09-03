@@ -30,6 +30,19 @@ Salin `.env.example` menjadi file lokal lalu isi lima variabel `SUPABASE_DB_*`.
 Jangan commit file hasil salinan tersebut. Di container Airflow, variabel itu harus
 tersedia pada worker Celery yang menjalankan task.
 
+Jika environment variable tidak diberikan langsung oleh Docker Compose, mount
+file `.env` lokal secara read-only ke `/opt/airflow/.env` pada service worker.
+Jangan menyalin file itu ke Git. Contoh konfigurasi service worker:
+
+```yaml
+env_file:
+  - .env
+```
+
+DAG juga akan membaca `/opt/airflow/.env` bila file tersebut di-mount. File
+`supabase_denta.env` lama yang hanya berisi `POSTGRES_URL` tidak cukup untuk DAG
+ini; worker harus menerima lima variable `SUPABASE_DB_*`.
+
 ## Hop GUI di Windows
 
 1. Buka project repository dengan Apache Hop GUI, lalu gunakan

@@ -66,6 +66,11 @@ fi
         task_id="check_pipeline",
         bash_command="""
 set -euo pipefail
+if [ -f /opt/airflow/.env ]; then
+    set -a
+    . /opt/airflow/.env
+    set +a
+fi
 if [ ! -f "$PIPELINE" ]; then
     echo "Pipeline tidak ditemukan: $PIPELINE"
     exit 1
@@ -90,6 +95,11 @@ echo "Pipeline tersedia dan environment database wajib terisi: $PIPELINE"
         task_id="run_pipeline",
         bash_command="""
 set -euo pipefail
+if [ -f /opt/airflow/.env ]; then
+    set -a
+    . /opt/airflow/.env
+    set +a
+fi
 mkdir -p "$HOP_AUDIT_FOLDER"
 /opt/hop/hop-run.sh --file="$PIPELINE" --level=Basic
 """,
