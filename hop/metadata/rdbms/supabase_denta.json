@@ -24,7 +24,7 @@
         "FORCE_IDENTIFIERS_TO_UPPERCASE": "N",
         "PREFERRED_SCHEMA_NAME": ""
       },
-      "manualUrl": "jdbc:postgresql://${SUPABASE_DB_HOST}:${SUPABASE_DB_PORT}/${SUPABASE_DB_NAME}",
+      "manualUrl": "jdbc:postgresql://${SUPABASE_DB_HOST}:${SUPABASE_DB_PORT}/${SUPABASE_DB_NAME}?prepareThreshold=0&preferQueryMode=simple",
       "sshTunnelPassphrase": "",
       "sshTunnelPassword": "",
       "sshTunnelPrivateKeyFile": "",
