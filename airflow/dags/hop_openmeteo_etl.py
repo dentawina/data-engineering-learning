@@ -102,6 +102,8 @@ if [ -f /opt/airflow/.env ]; then
 fi
 mkdir -p "$HOP_AUDIT_FOLDER"
 /opt/hop/hop-run.sh \
+    --project=default \
+    --environment=supabase_denta \
     --runconfig=local \
     --file="$PIPELINE" \
     --level=Basic

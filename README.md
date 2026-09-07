@@ -68,6 +68,8 @@ Dengan mount project ke `/opt/airflow/hop-project` dan konfigurasi Hop ke
 
 ```bash
 /opt/hop/hop-run.sh \
+  --project=default \
+  --environment=supabase_denta \
   --runconfig=local \
   --file="/opt/airflow/hop-project/pipelines/practice_hop.hpl" \
   --level=Basic
@@ -103,7 +105,8 @@ Di server, lakukan pull lalu validasi dan uji manual:
 ```bash
 git pull
 python -m py_compile airflow/dags/hop_openmeteo_etl.py
-/opt/hop/hop-run.sh --file="/opt/airflow/hop-project/pipelines/practice_hop.hpl" --level=Basic
+/opt/hop/hop-run.sh --project=default --environment=supabase_denta --runconfig=local \
+  --file="/opt/airflow/hop-project/pipelines/practice_hop.hpl" --level=Basic
 airflow dags list | grep hop_openmeteo_etl
 ```
 
