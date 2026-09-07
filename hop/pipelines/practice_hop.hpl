@@ -343,7 +343,7 @@ GROUP BY
     <schema>gold</schema>
     <table>weather_daily_summary</table>
     <commit>1000</commit>
-    <truncate>N</truncate>
+    <truncate>Y</truncate>
     <only_when_have_rows>N</only_when_have_rows>
     <ignore_errors>N</ignore_errors>
     <use_batch>Y</use_batch>
