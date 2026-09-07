@@ -103,8 +103,12 @@ fi
 mkdir -p "$HOP_AUDIT_FOLDER"
 /opt/hop/hop-run.sh \
     --project=default \
-    --environment=supabase_denta \
     --runconfig=local \
+    --system-properties="SUPABASE_DB_HOST=$SUPABASE_DB_HOST" \
+    --system-properties="SUPABASE_DB_PORT=$SUPABASE_DB_PORT" \
+    --system-properties="SUPABASE_DB_NAME=$SUPABASE_DB_NAME" \
+    --system-properties="SUPABASE_DB_USER=$SUPABASE_DB_USER" \
+    --system-properties="SUPABASE_DB_PASSWORD=$SUPABASE_DB_PASSWORD" \
     --file="$PIPELINE" \
     --level=Basic
 """,

@@ -20,9 +20,9 @@ hop/
 ```
 
 `project-config.json` berasal dari konfigurasi Hop dan menggunakan `${PROJECT_HOME}`
-sehingga tidak bergantung pada path Windows. File environment yang di-commit hanya
-memetakan lima variabel Hop ke environment variable OS; nilainya tidak menyimpan
-kredensial.
+sehingga tidak bergantung pada path Windows. File environment yang di-commit tidak
+menyimpan kredensial. Saat eksekusi, Airflow meneruskan lima environment variable
+OS sebagai system properties Hop.
 
 Folder runtime/config seperti `hop/config/` dan `.hop/` di-ignore agar kredensial
 dan metadata runtime tidak masuk Git. Metadata project yang diperlukan, termasuk
@@ -69,8 +69,12 @@ Dengan mount project ke `/opt/airflow/hop-project` dan konfigurasi Hop ke
 ```bash
 /opt/hop/hop-run.sh \
   --project=default \
-  --environment=supabase_denta \
   --runconfig=local \
+  --system-properties="SUPABASE_DB_HOST=$SUPABASE_DB_HOST" \
+  --system-properties="SUPABASE_DB_PORT=$SUPABASE_DB_PORT" \
+  --system-properties="SUPABASE_DB_NAME=$SUPABASE_DB_NAME" \
+  --system-properties="SUPABASE_DB_USER=$SUPABASE_DB_USER" \
+  --system-properties="SUPABASE_DB_PASSWORD=$SUPABASE_DB_PASSWORD" \
   --file="/opt/airflow/hop-project/pipelines/practice_hop.hpl" \
   --level=Basic
 ```
@@ -105,7 +109,12 @@ Di server, lakukan pull lalu validasi dan uji manual:
 ```bash
 git pull
 python -m py_compile airflow/dags/hop_openmeteo_etl.py
-/opt/hop/hop-run.sh --project=default --environment=supabase_denta --runconfig=local \
+/opt/hop/hop-run.sh --project=default --runconfig=local \
+  --system-properties="SUPABASE_DB_HOST=$SUPABASE_DB_HOST" \
+  --system-properties="SUPABASE_DB_PORT=$SUPABASE_DB_PORT" \
+  --system-properties="SUPABASE_DB_NAME=$SUPABASE_DB_NAME" \
+  --system-properties="SUPABASE_DB_USER=$SUPABASE_DB_USER" \
+  --system-properties="SUPABASE_DB_PASSWORD=$SUPABASE_DB_PASSWORD" \
   --file="/opt/airflow/hop-project/pipelines/practice_hop.hpl" --level=Basic
 airflow dags list | grep hop_openmeteo_etl
 ```
