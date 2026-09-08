@@ -106,7 +106,7 @@ def _flatten_features(features):
 @dag(
     dag_id="usgs_earthquake_ingestion",
     schedule="30 0 * * *",
-    start_date=pendulum.datetime(2026, 9, 9, tz=TIMEZONE),
+    start_date=pendulum.datetime(2026, 9, 1, tz=TIMEZONE),
     catchup=False,
     max_active_runs=1,
     tags=["usgs", "earthquake", "postgres", "elt"],
