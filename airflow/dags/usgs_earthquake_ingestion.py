@@ -128,7 +128,7 @@ def usgs_earthquake_pipeline():
             target_date.day,
             tz=TIMEZONE,
         )
-        end_wib = start_wib.add(days=1).subtract(milliseconds=1)
+        end_wib = start_wib.add(days=1).subtract(microseconds=1000)
         start_utc = _utc_iso(start_wib)
         end_utc = _utc_iso(end_wib)
 
