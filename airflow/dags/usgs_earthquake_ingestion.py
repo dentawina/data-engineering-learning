@@ -27,7 +27,11 @@ def _utc_iso(value):
 
 def _request_features(params):
     response = requests.get(USGS_URL, params=params, timeout=120)
-    response.raise_for_status()
+    if response.status_code >= 400:
+        raise requests.HTTPError(
+            f"USGS API {response.status_code}: {response.text[:500]}",
+            response=response,
+        )
     payload = response.json()
 
     if payload.get("type") != "FeatureCollection":
@@ -157,7 +161,7 @@ def usgs_earthquake_pipeline():
                 "endtime": end_utc,
                 "updatedafter": start_utc,
                 "eventtype": "earthquake",
-                "orderby": "updated",
+                "orderby": "time",
                 "limit": 20_000,
             }
         )
